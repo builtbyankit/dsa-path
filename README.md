@@ -44,17 +44,18 @@ npm test
 | `dist/app.js` | Navigation, question bank, and browser-local progress |
 | `dist/mastery.js` | Mastery lessons, labs, and scorecards |
 | `dist/patterns.js` | Pattern views, recognition drills, and walkthrough |
-| `dist/style.css` | Responsive styling |
+| `dist/minimal.css` | Active minimal responsive styling |
 | `check.cjs` | Route-rendering, content, filtering, and progress checks |
 
 The checks use a small mocked DOM and do not replace visual or end-to-end browser tests. Visual browser verification was not completed in the creation environment. After UI changes, check desktop/mobile layouts, keyboard navigation, saving/reloading notes, export/import, and the timer in a real browser.
 
 ## Hosting
 
-Deploy the contents of `dist/` to a static host. Navigation uses URL hashes, so server-side route rewrites are unnecessary. The app needs no backend. Google Fonts are loaded remotely with local font fallbacks; practice/resource links open external services. Hosting identity and credentials for the existing private Site are intentionally excluded.
+Deploy the contents of `dist/` to a static host. Navigation uses URL hashes, so server-side route rewrites are unnecessary. The app needs no backend. The interface uses system fonts; practice/resource links open external services. Hosting identity and credentials for the existing private Site are intentionally excluded.
 
 ## Scope and references
 
 This is independent preparation material, not an official Google or AlgoMaster product and not a hiring guarantee. Pattern-based organization was inspired by AlgoMaster; explanations, drills, and practice mappings were authored for this app. References are linked within the lessons. Practice titles and IDs point learners to LeetCode; external access requirements may change. Full third-party problem statements and editorials are not included.
 
 For demanding interviews, measure unseen problem-solving, correctness reasoning, testing, and adaptation—not completion count alone. System design and behavioral preparation remain separate workstreams.
+
