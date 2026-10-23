@@ -1141,3 +1141,698 @@ Find overlapping matches by falling back to the matched pattern’s longest prop
 
 ### Practice ladder
 Find the Index of the First Occurrence in a String (28) → Repeated String Match (686) → Shortest Palindrome (214)
+
+## Tree rerooting
+
+### Recognize it
+Compute an answer for every root when moving across an edge changes the answer predictably. Start with subtree summaries and one root answer.
+
+### Invariant
+The child subtree and its complement partition all vertices. Moving the root to a child makes its subtree closer and every other vertex farther.
+
+### Example
+Path 0—1—2 has distance sums [3,2,3]. With size[1]=2, moving from 0 to 1 changes 3 by 3−2·2=−1.
+
+### Template
+```python
+# tree rooted at 0; size from postorder; answer[0] from root distances
+for u in parent_before_child_order:
+    for v, weight in children[u]:
+        answer[v] = answer[u] + weight*(n-2*size[v])
+```
+
+### Complexity
+O(n) time and O(n) storage after two tree traversals.
+
+### Common mistake
+The formula assumes a tree. General graphs have alternate routes. Recursive DFS may overflow on a long chain; use iterative parent/order construction.
+
+### Follow-up
+For demand-weighted distances, replace subtree size with subtree demand and n with total demand.
+
+### Practice ladder
+Sum of Distances in Tree (834) → Diameter of Binary Tree (543)
+
+## Binary lifting & lowest common ancestors
+
+### Recognize it
+Many ancestor or LCA queries on one static rooted tree. A single query may be simpler with ordinary traversal.
+
+### Invariant
+up[v][j] is the 2^j-th ancestor. Doubling combines two jumps of half that length. After equalizing depths, lift both vertices without passing their LCA.
+
+### Example
+A jump of 13 edges is 8+4+1. On a chain, this takes three table lookups rather than thirteen parent steps.
+
+### Template
+```python
+# root is its own parent; LOG covers maximum depth
+for v in vertices: up[v][0] = parent[v]
+for j in range(1, LOG):
+    for v in vertices:
+        up[v][j] = up[up[v][j-1]][j-1]
+def kth(v, k):
+    if k > depth[v]: return None
+    for j in range(LOG):
+        if (k >> j) & 1: v = up[v][j]
+    return v
+```
+
+### Complexity
+O(n log n) preprocessing/memory; O(log n) ancestor or LCA query.
+
+### Common mistake
+Check k against depth before jumping. Root conventions must be consistent. Static tables become stale when the tree changes.
+
+### Follow-up
+Store a max/sum aggregate alongside each jump to answer weighted path queries through the LCA.
+
+### Practice ladder
+Kth Ancestor of a Tree Node (1483) → Lowest Common Ancestor of a Binary Tree (236) → Lowest Common Ancestor of a Binary Search Tree (235)
+
+## Tree DP: conditional subtree choices
+
+### Recognize it
+Choices inside separate child subtrees become independent once the current node’s state is fixed.
+
+### Invariant
+For independent-set value, take[u] includes u and excludes all children; skip[u] excludes u and independently chooses the better state for each child.
+
+### Example
+Root value 3 with leaf children 4 and 5: taking the root gives 3; skipping it gives 9. Return both possibilities to the parent.
+
+### Template
+```python
+def solve(u, parent):
+    take, skip = value[u], 0
+    for v in adj[u]:
+        if v == parent: continue
+        child_take, child_skip = solve(v, u)
+        take += child_skip
+        skip += max(child_take, child_skip)
+    return take, skip
+# answer = max(solve(root, -1)); empty selection permitted
+```
+
+### Complexity
+O(n) time, O(h) call stack for this two-state tree DP; larger state spaces increase transition cost.
+
+### Common mistake
+A general graph’s children are not independent subproblems. Do not memoize only a vertex when external boundary constraints change its meaning.
+
+### Follow-up
+Require exactly k chosen vertices: merge child tables by selected count and account for the convolution cost.
+
+### Practice ladder
+House Robber III (337) → Binary Tree Maximum Path Sum (124) → Sum of Distances in Tree (834)
+
+## 0–1 BFS
+
+### Recognize it
+Shortest paths where every edge cost is exactly 0 or 1. Zero-cost transitions should be processed ahead of one-cost transitions.
+
+### Invariant
+The deque processes nonstale states in nondecreasing tentative distance. Relaxation is still required: the first discovered path may not be cheapest.
+
+### Example
+S→A costs 1, S→B costs 0, B→A costs 0. A must improve from 1 to 0; a visited-on-discovery rule would reject that improvement.
+
+### Template
+```python
+from collections import deque
+dist = [float('inf')]*n; dist[s] = 0
+q = deque([(s,0)])
+while q:
+    u,d = q.popleft()
+    if d != dist[u]: continue
+    for v,w in adj[u]:
+        if d+w < dist[v]:
+            dist[v] = d+w
+            if w == 0: q.appendleft((v,d))
+            else: q.append((v,d+1))
+```
+
+### Complexity
+O(V+E) time and O(V+E) memory including graph and queued entries.
+
+### Common mistake
+The deque rule is specific to weights 0/1. With arbitrary positive weights, use Dijkstra. Queue entries need stale-state handling in this formulation.
+
+### Follow-up
+For small bounded integer weights, investigate bucket-based shortest paths and account for the weight bound.
+
+### Practice ladder
+Minimum Cost to Make at Least One Valid Path in a Grid (1368) → Shortest Path in a Grid with Obstacles Elimination (1293) → Network Delay Time (743)
+
+## Minimum spanning tree: cut property
+
+### Recognize it
+Connect all vertices in an undirected weighted graph with minimum total edge weight. This is different from minimizing distances from one source.
+
+### Invariant
+For any cut, a lightest edge crossing that cut can belong to an MST. Kruskal adds the cheapest edge joining two distinct components.
+
+### Example
+Triangle weights 1,2,10: add the edges of weights 1 and 2; the edge of weight 10 joins vertices already connected and is rejected.
+
+### Template
+```python
+total, chosen = 0, []
+for weight,u,v in sorted(edges):
+    if union(u,v):  # DSU union returns true only when components merge
+        total += weight
+        chosen.append((u,v))
+if len(chosen) != n-1: return None  # n >= 1
+return total, chosen
+```
+
+### Complexity
+O(E log E) sorting plus near-linear DSU work, O(V+E) memory with edge storage.
+
+### Common mistake
+A disconnected graph yields a forest, not a spanning tree. Negative weights are allowed for MST even though ordinary Dijkstra forbids them.
+
+### Follow-up
+Compare Prim for dense/implicit graphs; explain the minimum-bottleneck property for threshold connectivity.
+
+### Practice ladder
+Min Cost to Connect All Points (1584) → Checking Existence of Edge Length Limited Paths (1697) → Swim in Rising Water (778)
+
+## Bridges & articulation points
+
+### Recognize it
+Identify edges or vertices whose removal disconnects an undirected graph. Use DFS discovery times and reachable ancestors.
+
+### Invariant
+low[v] is the earliest discovery time reachable from v’s DFS subtree using tree edges and at most one back edge. A tree edge u→v is a bridge iff low[v] > tin[u].
+
+### Example
+A triangle has no bridge because every tree edge has an alternate route. Attach one leaf to it: that leaf edge is a bridge.
+
+### Template
+```python
+def dfs(u, parent_edge):
+    tin[u] = low[u] = next_time()
+    for v, edge_id in adj[u]:
+        if edge_id == parent_edge: continue
+        if tin[v] != -1:
+            low[u] = min(low[u], tin[v])
+        else:
+            dfs(v, edge_id)
+            low[u] = min(low[u], low[v])
+            if low[v] > tin[u]: bridges.append(edge_id)
+# start DFS from every unvisited vertex
+```
+
+### Complexity
+O(V+E) time and O(V) auxiliary arrays/stack.
+
+### Common mistake
+Skip the parent edge by ID, not every edge to the parent, or parallel edges give false bridges. A root articulation point needs at least two DFS children; nonroots use low[child] ≥ tin[u].
+
+### Follow-up
+Compress non-bridge-connected regions into a bridge tree and reason about failure-tolerant connectivity.
+
+### Practice ladder
+Critical Connections in a Network (1192) → Minimum Number of Days to Disconnect Island (1568)
+
+## Strongly connected components
+
+### Recognize it
+Group directed vertices that can mutually reach one another; collapse cyclic dependencies into a DAG.
+
+### Invariant
+Kosaraju first records finish order on the original graph. Traversing the transpose in reverse finish order extracts one maximal mutually reachable component at a time.
+
+### Example
+Edges A→B, B→A, B→C produce components {A,B} and {C}; the condensation graph has one edge from the first component to the second.
+
+### Template
+```python
+order, seen = [], set()
+def first(u):
+    seen.add(u)
+    for v in adj[u]:
+        if v not in seen: first(v)
+    order.append(u)
+for u in vertices:
+    if u not in seen: first(u)
+# Clear visited; run DFS on reverse_adj in reversed(order).
+# Assign a fresh component ID for each new DFS root.
+```
+
+### Complexity
+O(V+E) time and O(V+E) memory when storing the transpose.
+
+### Common mistake
+Directed reachability is not equivalence until both directions hold. Ordinary undirected DSU does not find SCCs. Reverse finish order is essential.
+
+### Follow-up
+Build the condensation DAG, deduplicate component edges, then perform dependency DP. 2-SAT reduces satisfiability to SCC conflicts.
+
+### Practice ladder
+Find Eventual Safe States (802) → Course Schedule II (210) → Maximum Employees to Be Invited to a Meeting (2127)
+
+## Grid DP & obstacle states
+
+### Recognize it
+Movement on a grid is acyclic, such as only right/down, so each cell depends on already processed neighbors.
+
+### Invariant
+dp[r][c] counts paths or stores optimal cost to exactly that cell under the specified move set. Obstacles are unreachable, not ordinary zero-cost cells.
+
+### Example
+A 2×3 empty grid has three right/down paths. Blocking its top-middle cell leaves one path through the bottom row.
+
+### Template
+```python
+dp = [0]*cols
+dp[0] = 1
+for r in range(rows):
+    for c in range(cols):
+        if blocked[r][c]: dp[c] = 0
+        elif c > 0: dp[c] += dp[c-1]
+return dp[-1]  # nonempty grid; right/down moves only
+```
+
+### Complexity
+O(rows·cols) time, O(cols) memory for path count; big integer arithmetic may add cost.
+
+### Common mistake
+Allowing arbitrary directions creates cycles and usually calls for graph search instead. Rolling rows discard path reconstruction information.
+
+### Follow-up
+Permit one obstacle removal: add a remaining-budget dimension; if movement is no longer acyclic, use expanded-state BFS.
+
+### Practice ladder
+Unique Paths (62) → Unique Paths II (63) → Minimum Path Sum (64) → Triangle (120)
+
+## Longest increasing subsequence
+
+### Recognize it
+Select a noncontiguous sequence with ordered values; optimize its length or count. Clarify strict versus nondecreasing order.
+
+### Invariant
+tails[k] is the smallest possible last value of a strictly increasing subsequence of length k+1 among processed items. Smaller tails preserve more extension opportunities.
+
+### Example
+For [3,1,2], tails evolves [3]→[1]→[1,2]. Replacing 3 with 1 does not lose a length-one option; it improves its future potential.
+
+### Template
+```python
+from bisect import bisect_left
+tails = []
+for x in a:
+    i = bisect_left(tails,x)
+    if i == len(tails): tails.append(x)
+    else: tails[i] = x
+return len(tails)
+```
+
+### Complexity
+O(n log n) time, O(n) memory. Basic dp[i]=1+max(dp[j]) for j<i,a[j]<a[i] costs O(n²).
+
+### Common mistake
+The tails array is not necessarily an actual subsequence. Use predecessor indices for reconstruction. Nondecreasing LIS uses upper bound, not lower bound.
+
+### Follow-up
+Count optimal subsequences with length/count states; sorting multidimensional envelopes needs tie rules that prevent illegal equal-width chains.
+
+### Practice ladder
+Longest Increasing Subsequence (300) → Number of Longest Increasing Subsequence (673) → Russian Doll Envelopes (354)
+
+## Palindrome DP & center expansion
+
+### Recognize it
+Palindrome substring/subsequence length, counting, or partitions. First distinguish contiguous substrings from subsequences.
+
+### Invariant
+A substring [l,r] is palindromic iff endpoints match and its interior is palindromic (or has length at most one). Process short intervals before long ones.
+
+### Example
+For “abba”, matching outer a values rely on interior “bb”. Center expansion must consider both odd centers and the even center between the b values.
+
+### Template
+```python
+pal = [[False]*n for _ in range(n)]
+for length in range(1,n+1):
+    for l in range(n-length+1):
+        r = l+length-1
+        pal[l][r] = s[l]==s[r] and (length<=2 or pal[l+1][r-1])
+```
+
+### Complexity
+O(n²) time/memory for the table. Center expansion uses O(1) auxiliary space and O(n²) worst-case time.
+
+### Common mistake
+Longest palindromic subsequence uses max(skip left, skip right) when endpoints differ; substring validity does not. Never mix those recurrences.
+
+### Follow-up
+Use the palindrome table to minimize partition cuts, or learn Manacher only when linear-time palindrome radii are required.
+
+### Practice ladder
+Longest Palindromic Substring (5) → Palindromic Substrings (647) → Longest Palindromic Subsequence (516) → Palindrome Partitioning (131) → Palindrome Partitioning II (132)
+
+## State-machine DP
+
+### Recognize it
+Sequential decisions with a small number of modes: holding/not holding, cooldown, transaction budget, or alternating allowed actions.
+
+### Invariant
+Each state stores the best value after the processed prefix in that exact mode. Transitions use previous-step values and only legal actions.
+
+### Example
+For prices [1,3,2,5] and fee 1, a buy at 1 and sell at 5 yields 3. Two completed trades also yield 3; transaction accounting must be consistent.
+
+### Template
+```python
+cash, hold = 0, float('-inf')
+for price in prices:
+    old_cash, old_hold = cash, hold
+    cash = max(old_cash, old_hold+price-fee)
+    hold = max(old_hold, old_cash-price)
+return cash  # at most one held share; unlimited trades
+```
+
+### Complexity
+O(n·number of states·transitions per state); two-state trading is O(n) time, O(1) memory.
+
+### Common mistake
+Using already-updated values can allow unintended same-step transitions. Impossible states start at −∞ for maximization; zero can fabricate a free holding.
+
+### Follow-up
+Add a cooldown mode or remaining transaction count; specify whether the count changes on buying or selling.
+
+### Practice ladder
+Best Time to Buy and Sell Stock with Cooldown (309) → Best Time to Buy and Sell Stock with Transaction Fee (714) → Best Time to Buy and Sell Stock IV (188)
+
+## Digit DP
+
+### Recognize it
+Count integers in a huge numeric interval satisfying digit-based properties without enumerating every integer.
+
+### Invariant
+State (position,tight,started,property) summarizes the already chosen prefix. tight restricts the next digit to the bound; started distinguishes leading zeros from actual digits.
+
+### Example
+For counting positive values ≤25 with no repeated digits, prefix 2 forces the next digit ≤5; prefix 1 allows any digit. Leading zeros must not consume digit 0 in the used mask.
+
+### Template
+```python
+@cache
+def count(pos, tight, started, mask):
+    if pos == len(digits): return int(started)
+    limit = digits[pos] if tight else 9
+    total = 0
+    for d in range(limit+1):
+        nt = tight and d == digits[pos]
+        if not started and d == 0:
+            total += count(pos+1, nt, False, mask)
+        elif not (mask >> d) & 1:
+            total += count(pos+1, nt, True, mask | (1<<d))
+    return total
+```
+
+### Complexity
+For the distinct-digit mask example: O(D·2^10·10) time up to constant flags, O(D·2^10) memo space. Other properties have other state counts.
+
+### Common mistake
+Decide whether zero counts. Rebuild/clear bound-specific caches when computing F(R) and F(L−1). A property state must contain all future-relevant information.
+
+### Follow-up
+Replace the used-digit mask with digit-sum modulo m, an automaton state for forbidden substrings, or both; multiply state-space costs.
+
+### Practice ladder
+Numbers With Repeated Digits (1012) → Count Special Integers (2376) → Numbers At Most N Given Digit Set (902)
+
+## Meet in the middle
+
+### Recognize it
+Subset enumeration is too large at 2^n but feasible at roughly 2^(n/2), often when n is around 40 and constraints fit memory.
+
+### Invariant
+Every full subset uniquely splits into a subset of the left half and one of the right half. Combine summaries instead of enumerating all cross products.
+
+### Example
+For [2,5,−3,7] and goal 4, choose the empty left subset and both right values. Right-half sums are 0,−3,7,4; binary search finds the required complement 4.
+
+### Template
+```python
+def sums(a):
+    out = [0]
+    for x in a: out += [s+x for s in out]
+    return out
+left = sums(a[:len(a)//2])
+right = sorted(sums(a[len(a)//2:]))
+# For each x in left, binary-search goal-x in right.
+# Check insertion position and its predecessor for closest sum.
+```
+
+### Complexity
+O(n·2^(n/2)) time with sorting/search and O(2^(n/2)) memory, up to uneven halves.
+
+### Common mistake
+Do not combine every pair: that restores 2^n work. Empty subsets, negatives, and exact cardinality alter the matching conditions.
+
+### Follow-up
+For exactly k chosen elements, group half-subset sums by cardinality and combine groups whose sizes sum to k.
+
+### Practice ladder
+Closest Subsequence Sum (1755) → Partition Array Into Two Arrays to Minimize Sum Difference (2035)
+
+## Segment tree: associative range queries
+
+### Recognize it
+Point updates plus range sums/minima/maxima or custom associative summaries. Choose an identity and merge operation.
+
+### Invariant
+Each internal node is the merge of its two children. A query partitions the requested interval into disjoint stored segments; preserve order for noncommutative merges.
+
+### Example
+For [2,1,4,3], query [1,3) returns 1+4=5. Updating index 2 to 7 changes only nodes on its root path.
+
+### Template
+```python
+# iterative sum tree; leaves at n..2n-1; query [l,r)
+def query(l,r):
+    l += n; r += n; answer = 0
+    while l < r:
+        if l & 1: answer += tree[l]; l += 1
+        if r & 1: r -= 1; answer += tree[r]
+        l //= 2; r //= 2
+    return answer
+```
+
+### Complexity
+O(n) build, O(log n) point update/query, O(n) memory.
+
+### Common mistake
+Associativity is required; commutativity is not. For ordered merges, accumulate left and right answers separately. Use consistent inclusive/exclusive boundaries.
+
+### Follow-up
+Augment nodes with prefix/suffix/best-subarray summaries; prove the merge computes the combined segment correctly.
+
+### Practice ladder
+Range Sum Query - Mutable (307) → Falling Squares (699) → Count of Smaller Numbers After Self (315)
+
+## Lazy propagation: deferred range updates
+
+### Recognize it
+Many range updates and range queries; pushing each update to every element would be too slow.
+
+### Invariant
+A node’s aggregate already includes its pending tag, while descendants may not. Push before inspecting children; combine tags in chronological order.
+
+### Example
+Adding 3 to a length-four segment increases its sum by 12. Store the +3 tag at that node; its children receive it only when a later operation descends.
+
+### Template
+```python
+def apply(node, length, delta):
+    total[node] += length*delta
+    lazy[node] += delta
+def push(node, left_length, right_length):
+    apply(2*node, left_length, lazy[node])
+    apply(2*node+1, right_length, lazy[node])
+    lazy[node] = 0
+# Fully covered update: apply; partial cover: push, recurse, pull.
+```
+
+### Complexity
+O(log n) per range-add/range-sum operation, O(n) space, with a correct compatible lazy design.
+
+### Common mistake
+Not every update has a simple lazy action. Assignment and addition tags compose differently; zero cannot mean “no pending assignment” if assigning zero is legal.
+
+### Follow-up
+Support affine updates x→a·x+b: sum becomes a·sum+b·length and tag composition order matters.
+
+### Practice ladder
+Falling Squares (699) → Range Sum Query - Mutable (307)
+
+## Difference arrays & range increments
+
+### Recognize it
+Many range additions followed by one final materialization, or static coverage counts. Online aggregate queries may require a tree instead.
+
+### Invariant
+A range increment starts contributing at its left boundary and stops immediately after its right boundary. Prefix accumulation reconstructs each value.
+
+### Example
+Start [0,0,0,0], add 2 over [1,3): differences [0,2,0,−2,0] reconstruct [0,2,2,0].
+
+### Template
+```python
+diff = [0]*(n+1)
+for l,r,delta in updates:  # half-open [l,r)
+    diff[l] += delta
+    diff[r] -= delta
+running = 0
+for i in range(n):
+    running += diff[i]
+    a[i] += running
+```
+
+### Complexity
+O(q+n) time, O(n) extra space for q updates and final reconstruction.
+
+### Common mistake
+Off-by-one cancellation is the common bug. Range assignment is not range addition. Interleaved sum queries need an appropriate online structure.
+
+### Follow-up
+A Fenwick tree over differences supports range add and point query; two Fenwick trees can support range add plus range sum.
+
+### Practice ladder
+Corporate Flight Bookings (1109) → Car Pooling (1094) → Shifting Letters II (2381)
+
+## Cyclic placement & index-as-a-bucket
+
+### Recognize it
+Array values come from a small integer domain naturally mapped to indices; detect missing/duplicate values with limited extra memory.
+
+### Invariant
+Each successful swap places at least one in-range value at its home index. Duplicate guards prevent endless swaps between equal values.
+
+### Example
+For [3,1,2], value 3 belongs at index 2, then value 2 at index 1, yielding [1,2,3]. For [1,1], the equality guard stops immediately.
+
+### Template
+```python
+for i in range(n):
+    while 1 <= a[i] <= n and a[a[i]-1] != a[i]:
+        j = a[i]-1
+        a[i],a[j] = a[j],a[i]
+# A mismatch a[i] != i+1 reveals a missing home value.
+```
+
+### Complexity
+O(n) time and O(1) extra space: successful placements are bounded by n.
+
+### Common mistake
+Only index after checking range. Mutation must be allowed. Values outside the assumed domain require rejection or separate treatment.
+
+### Follow-up
+First missing positive ignores out-of-range values, places valid ones, then returns the first missing home or n+1.
+
+### Practice ladder
+Find All Numbers Disappeared in an Array (448) → First Missing Positive (41) → Find All Duplicates in an Array (442) → Missing Number (268)
+
+## Quickselect & three-way partition
+
+### Recognize it
+Find a kth order statistic in an unsorted static array without sorting all values; mutation is permitted.
+
+### Invariant
+Partition into <pivot, =pivot, >pivot. The kth index lies in exactly one region; discard the others. A random pivot gives expected progress.
+
+### Example
+For [4,2,2,7], kth index 1 falls inside the equal-to-2 block, so return 2 immediately despite duplicate values.
+
+### Template
+```python
+# schematic: partition3 rearranges a[lo:hi+1]
+while lo <= hi:
+    pivot = a[random_index(lo,hi)]
+    first_equal,last_equal = partition3(a,lo,hi,pivot)
+    if k < first_equal: hi = first_equal-1
+    elif k > last_equal: lo = last_equal+1
+    else: return a[k]
+```
+
+### Complexity
+Expected O(n) time with random pivots; worst case O(n²). In-place iterative partition can use O(1) auxiliary memory.
+
+### Common mistake
+Do not call ordinary randomized quickselect worst-case linear. k is an index after rank conversion. A sorted output requires extra work.
+
+### Follow-up
+Compare a bounded heap for streaming data, or median-of-medians when a deterministic linear bound is essential.
+
+### Practice ladder
+Kth Largest Element in an Array (215) → K Closest Points to Origin (973) → Top K Frequent Elements (347)
+
+## Reservoir sampling
+
+### Recognize it
+Uniform sampling from an unknown-length stream with bounded memory, when all items cannot be retained.
+
+### Invariant
+After i arrivals, each position has probability 1/i of being the selected item. Replacing with probability 1/i preserves this by induction.
+
+### Example
+For A,B,C: A survives with 1·1/2·2/3=1/3; B with 1/2·2/3=1/3; C is chosen with 1/3.
+
+### Template
+```python
+chosen = None
+for i,item in enumerate(stream,1):
+    if randint(1,i) == 1:
+        chosen = item
+return chosen  # uniform inclusive integer RNG
+```
+
+### Complexity
+O(n) time and O(1) extra memory for one sample, excluding item payload storage.
+
+### Common mistake
+Duplicates represent distinct positions. Distribution tests are sanity checks, not proofs. Modulo-reducing a random number can introduce bias.
+
+### Follow-up
+For k samples, fill k slots, then draw j uniformly in [1,i]; replace slot j−1 only if j≤k.
+
+### Practice ladder
+Linked List Random Node (382) → Random Pick Index (398) → Random Pick with Weight (528)
+
+## Bit manipulation & parity invariants
+
+### Recognize it
+Compact subsets, parity, disjoint flags, repeated-value cancellation, and operations on fixed-width integer representations.
+
+### Invariant
+XOR is associative and self-canceling: x XOR x=0. For paired duplicates, XOR of the processed prefix retains exactly the uncanceled values.
+
+### Example
+[6,2,6] reduces to 2. For set-bit counting, 12 (1100) becomes 8 (1000), then 0 when repeatedly clearing the lowest set bit.
+
+### Template
+```python
+def popcount_nonnegative(x):
+    count = 0
+    while x:
+        x &= x-1
+        count += 1
+    return count
+# For paired duplicates: reduce XOR over all values.
+```
+
+### Complexity
+O(number of set bits) iterations for popcount; O(n) XOR operations for paired-duplicate cancellation. Bit-operation cost depends on integer width.
+
+### Common mistake
+Negative arbitrary-precision integers need a fixed-width mask for this popcount loop. XOR does not isolate a unique item under arbitrary multiplicities.
+
+### Follow-up
+For two unique values, split numbers by one set bit of their combined XOR and cancel pairs in each group.
+
+### Practice ladder
+Single Number (136) → Number of 1 Bits (191) → Counting Bits (338) → Single Number III (260) → Single Number II (137) → Bitwise AND of Numbers Range (201)

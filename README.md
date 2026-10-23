@@ -1,6 +1,10 @@
 # DSA Path
 
-A browser-based interview preparation workspace with 18 foundation phases, 252 practice questions, 33 reusable algorithm patterns, 14 mastery lessons, six original interview labs, and eight pattern-recognition drills.
+A browser-based interview preparation workspace with 18 foundation phases, 267 practice questions, 53 reusable algorithm patterns, 14 mastery lessons, six original interview labs, and eight pattern-recognition drills.
+
+Navigation has six sections: Learn, Patterns, Questions, Practice, Review & notes, and Resources. Learn links to study plans and advanced lessons; Practice groups labs, recognition drills, the mock timer, and readiness history. Existing deep links and saved progress remain supported.
+
+The pattern atlas includes rerooting, binary lifting/LCA, tree DP, 0–1 BFS, MST, bridges, SCCs, grid/LIS/palindrome/state-machine/digit DP, meet-in-the-middle, segment trees and lazy propagation, difference arrays, cyclic placement, quickselect, reservoir sampling, and bit manipulation. This covers the identified curriculum gaps, not every possible algorithmic variation.
 
 ## Run locally
 
@@ -40,6 +44,7 @@ npm test
 | `content/DSA-Preparation-Guide.md` | Foundation curriculum |
 | `mastery.md` | Advanced lessons and training plan |
 | `patterns.cjs` | Pattern descriptions, templates, and practice mappings |
+| `advanced-patterns.cjs` | Specialist pattern extensions; appended IDs preserve progress |
 | `labs.cjs` | Original interview exercises |
 | `dist/app.js` | Navigation, question bank, and browser-local progress |
 | `dist/mastery.js` | Mastery lessons, labs, and scorecards |

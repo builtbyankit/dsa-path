@@ -264,4 +264,5 @@ add('KMP: reuse borders on mismatch','Strings & structures',16,10,
 'O(n) time and O(n) memory for the prefix function; matching is O(text length + pattern length).',
 'Fallback is pi[j−1], not simply j−1. Define empty-pattern behavior. Hash-based alternatives may need collision verification.',
 'Find overlapping matches by falling back to the matched pattern’s longest proper border after a full match.',[28,686,214]);
+require('./advanced-patterns.cjs')(add);
 module.exports=patterns;
