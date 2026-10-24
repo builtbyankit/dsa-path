@@ -77,3 +77,27 @@ nav a { color:var(--muted); }
 .trace-array { flex-wrap:wrap; }
 .trace-cell { min-width:45px; }
 @media(max-width:750px) { .brand { padding-bottom:12px; } .panel { padding:18px; } .grid { column-gap:20px; } }
+
+/* Learn and pattern catalogs: distinct cards, compact metadata, clear actions. */
+.modern-list { gap:16px; margin-top:20px; align-items:stretch; }
+.modern-list .card { border:1px solid var(--line); border-radius:12px; background:var(--paper); padding:24px; position:relative; min-width:0; box-shadow:0 2px 5px rgb(0 0 0 / 2%); transition:border-color .16s ease,box-shadow .16s ease; }
+.modern-list .card h3 { font-size:17px; font-weight:600; letter-spacing:-.25px; margin:16px 0 10px; line-height:1.5; }
+.modern-list .card p { font-size:12px; line-height:1.8; margin-bottom:22px; color:var(--muted); }
+.modern-list .card:focus-within { border-color:var(--accent); }
+.modern-list .card-top,.modern-list .meta { gap:12px; align-items:center; }
+.modern-list .phase-icon { display:grid; place-items:center; width:34px; height:34px; flex-shrink:0; border-radius:9px; background:var(--soft); color:var(--accent); font:12px ui-monospace,monospace; border:1px solid var(--line); }
+.modern-list .tag,.modern-list .meta > span:first-child { color:var(--accent); background:var(--soft); border:1px solid var(--line); border-radius:20px; padding:4px 9px; font-size:10px; line-height:1.5; letter-spacing:.2px; }
+.modern-list .tag { text-align:right; }
+.modern-list .card-bottom { font-size:10px; padding-top:11px; margin-top:0; gap:10px; }
+.modern-list .card-bottom > span:last-child { white-space:nowrap; color:var(--accent); font-weight:600; }
+.modern-list .bar { height:4px; border-radius:8px; }
+.modern-list .bar i { background:var(--accent); border-radius:8px; }
+.modern-list .arrow { display:block; color:var(--accent); font-size:11px; font-weight:600; border-top:1px solid var(--line); padding-top:15px; margin-top:auto; }
+@media(hover:hover) { .modern-list .card:hover { border-color:var(--accent); box-shadow:0 6px 18px rgb(0 0 0 / 5%); } .modern-list .card:hover h3 { text-decoration:none; } }
+@media(max-width:750px) { .modern-list { grid-template-columns:1fr; gap:12px; } .modern-list .card { padding:20px; } }
+@media(prefers-reduced-motion:reduce) { .modern-list .card { transition:none; } }
+
+.modern-list .card { padding:0; }
+.modern-list .card a.stretched { padding:24px; height:100%; display:flex; flex-direction:column; border-radius:12px; }
+.modern-list .card .bar { margin-top:auto; }
+@media(max-width:750px) { .modern-list .card a.stretched { padding:20px; } }
