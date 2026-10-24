@@ -101,3 +101,16 @@ nav a { color:var(--muted); }
 .modern-list .card a.stretched { padding:24px; height:100%; display:flex; flex-direction:column; border-radius:12px; }
 .modern-list .card .bar { margin-top:auto; }
 @media(max-width:750px) { .modern-list .card a.stretched { padding:20px; } }
+
+/* Warm, low-glare light palette. */
+:root:not([data-theme=dark]) { --paper:#faf6ed; --soft:#f2ecdf; --ink:#302e28; --muted:#706b60; --line:#e2dacb; --accent:#57684b; --tint:#eaeedd; }
+html:not([data-theme=dark]) body { background:var(--paper); }
+html:not([data-theme=dark]) aside { background:var(--soft); }
+html:not([data-theme=dark]) nav a.active,html:not([data-theme=dark]) nav a:hover { background:#e8e2d5; color:var(--ink); }
+html:not([data-theme=dark]) .modern-list .card,html:not([data-theme=dark]) .modern-phase,html:not([data-theme=dark]) .panel { background:#fcf9f2; }
+html:not([data-theme=dark]) input,html:not([data-theme=dark]) select,html:not([data-theme=dark]) textarea,html:not([data-theme=dark]) .btn.light,html:not([data-theme=dark]) .mastery-banner .btn,html:not([data-theme=dark]) .button.secondary,html:not([data-theme=dark]) .tabs button,html:not([data-theme=dark]) .diagram-node,html:not([data-theme=dark]) .skip { background:#fcf9f2; color:var(--ink); border-color:var(--line); }
+html:not([data-theme=dark]) .callout,html:not([data-theme=dark]) th,html:not([data-theme=dark]) .reader pre,html:not([data-theme=dark]) .reader code { background:var(--soft); }
+html:not([data-theme=dark]) .reader pre code { background:none; color:var(--ink); }
+html:not([data-theme=dark]) .bar,html:not([data-theme=dark]) .progress-track { background:#e4dece; }
+html:not([data-theme=dark]) .architecture-svg rect { fill:#fcf9f2; stroke:#c6ccb6; }
+html:not([data-theme=dark]) .btn.light:hover,html:not([data-theme=dark]) .button.secondary:hover,html:not([data-theme=dark]) .theme-toggle:hover { background:var(--soft); }
